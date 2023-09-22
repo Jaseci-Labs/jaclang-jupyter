@@ -1,0 +1,16 @@
+{
+    "argv": [
+        "python",
+        "-m",
+        "jackernel.kernel",
+        "-f",
+        "{connection_file}"
+    ],
+    "display_name": "Jac",
+    "language_info": {
+        "name": "python",
+        "mimetype": "text/plain",
+        "pygments_lexer": "jac_lexer",
+        "file_extension": ".jac"
+    }
+}

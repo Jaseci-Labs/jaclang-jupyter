@@ -1,7 +1,16 @@
-# Installation Instruction for Jaclang Jupyter Kernel
+# A Jupyter kernel for Jaclang
 
-- Step 1: Open the Terminal and go to `jaclang/support/`
-- Step 2: Run the command `jupyter kernelspec install --replace --user jupyter_kernel`
+## Installation
+
+Installation Instruction for Jaclang Jupyter Kernel
+
+- Step 1: 
+
+```
+pip install jackernel
+python3 -m jackernel.install
+```
+
 - Step 3: Start the Jupyter Notebook; If you already installed you have to refresh the server.
 - Step 4: Open a new notebook and select the kernel as the `Jac`,
 

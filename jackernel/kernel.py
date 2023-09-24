@@ -8,7 +8,6 @@ Version: 1.0.0
 """
 
 import contextlib
-import os
 import os.path as op
 import tempfile
 from io import StringIO
@@ -16,12 +15,9 @@ from io import StringIO
 from ipykernel.kernelapp import IPKernelApp
 from ipykernel.kernelbase import Kernel
 
-from jaclang import jac_blue_import as jac_import
 from jackernel.syntax_hilighter import JacLexer
 
-from pygments import lexers
-
-# jac_lexer = lexers.load_lexer_from_file("syntax_hilighter.py", "JacLexer")
+from jaclang import jac_blue_import as jac_import
 
 jac_lexer = JacLexer()
 
@@ -95,7 +91,6 @@ class JacKernel(Kernel):
                 self.send_response(self.iopub_socket, "stream", stream_content)
 
             except Exception as e:
-                # Send the exception as an error message to the frontend.
                 error_content = {
                     "ename": type(e).__name__,
                     "evalue": str(e),
@@ -111,13 +106,13 @@ class JacKernel(Kernel):
             finally:
                 pass
 
-        # Return the execution result.
-        return {
+        execution_result = {
             "status": "ok",
             "execution_count": self.execution_count,
             "payload": [],
             "user_expressions": {},
         }
+        return execution_result
 
 
 if __name__ == "__main__":

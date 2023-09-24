@@ -36,7 +36,7 @@ def exec_jac(code: str) -> str:
             f.write(code)
 
         try:
-            jac_import(op.join(tmpdir, "temp"))
+            jac_import(target=op.join(tmpdir, "temp"), base_path=tmpdir)
             # Import the jac file, this generates the __jac_gen__ folder at the same level as the jac file,
             # This folder contains the python file that we want to execute.
             script_path = op.join(tmpdir, "__jac_gen__/temp.py")
@@ -58,6 +58,8 @@ def exec_jac(code: str) -> str:
 
         finally:
             pass
+
+    return captured_output
 
 
 class JacKernel(Kernel):

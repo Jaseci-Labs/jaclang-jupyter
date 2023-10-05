@@ -1,13 +1,19 @@
+"""
+Jac Kernel for Jupyter.
+
+This module provides a installation commands for the jupyter kernel developed for the Jac programming language.
+Version: 1.0.0
+"""
+
+import argparse
 import json
 import os
 import sys
-import argparse
-import pathlib
-import shutil
+
+from IPython.utils.tempdir import TemporaryDirectory
 
 from jupyter_client.kernelspec import KernelSpecManager
-from IPython.utils.tempdir import TemporaryDirectory
-from .resources import _ICON_PATH
+
 
 kernel_json = {
     "argv": ["python", "-m", "jackernel.kernel", "-f", "{connection_file}"],
@@ -21,7 +27,21 @@ kernel_json = {
 }
 
 
-def install_my_kernel_spec(user=True, prefix=None):
+def install_my_kernel_spec(user: bool = True, prefix: str = None) -> None:
+    """
+    Install the Jac kernel spec.
+
+    Parameters
+    ----------
+    user : bool
+    Whether to do a user install
+    prefix : str
+    Specify prefix to install to, e.g. an env
+
+    Returns
+    -------
+    A KernelSpecManager instance.
+    """
     with TemporaryDirectory() as td:
         os.chmod(td, 0o755)  # Starts off as 700, not user readable
         with open(os.path.join(td, "kernel.json"), "w") as f:
@@ -30,14 +50,30 @@ def install_my_kernel_spec(user=True, prefix=None):
         KernelSpecManager().install_kernel_spec(td, "Jac", user=user, prefix=prefix)
 
 
-def _is_root():
+def _is_root() -> bool:
+    """
+    Check if the user is root.
+
+    Returns
+    -------
+    bool
+    """
     try:
         return os.geteuid() == 0
     except AttributeError:
         return False  # assume not an admin on non-Unix platforms
 
 
-def main(argv=None):
+def main(argv: list = None) -> None:
+    """
+    Entry point for the jac kernel install.
+
+    Parameters
+    ----------
+    argv : list
+        If called from the command line, arguments to be processed. If not
+        given, sys.argv is used.
+    """
     parser = argparse.ArgumentParser(description="Install KernelSpec for Jac Kernel")
     prefix_locations = parser.add_mutually_exclusive_group()
 

@@ -23,7 +23,19 @@ jac_lexer = JacLexer()
 
 
 def exec_jac(code: str) -> str:
-    """Compile, jac code, and execute and return the output."""
+    """
+    Compile, jac code, and execute and return the output.
+
+    Parameters
+    ----------
+    code : str
+        The jac code to execute.
+
+    Returns
+    -------
+    str
+        The output of the execution.
+    """
     with tempfile.TemporaryDirectory() as tmpdir:
         source_path = op.join(tmpdir, "temp.jac")
 
@@ -51,9 +63,6 @@ def exec_jac(code: str) -> str:
         except Exception as e:
             captured_output = "Exception: " + str(e)
             return captured_output
-
-        finally:
-            pass
 
     return captured_output
 
@@ -87,32 +96,32 @@ class JacKernel(Kernel):
         if not silent:
             try:
                 output = exec_jac(code)
-                stream_content = {"name": "stdout", "text": output}
-                self.send_response(self.iopub_socket, "stream", stream_content)
+                self.send_response(
+                    self.iopub_socket, "stream", {"name": "stdout", "text": output}
+                )
 
             except Exception as e:
-                error_content = {
-                    "ename": type(e).__name__,
-                    "evalue": str(e),
-                    "traceback": [],
-                }
-                self.send_response(self.iopub_socket, "error", error_content)
+                self.send_response(
+                    self.iopub_socket,
+                    "error",
+                    {
+                        "ename": type(e).__name__,
+                        "evalue": str(e),
+                        "traceback": [],
+                    },
+                )
 
                 return {
                     "status": "error",
                     "execution_count": self.execution_count,
                 }
 
-            finally:
-                pass
-
-        execution_result = {
+        return {
             "status": "ok",
             "execution_count": self.execution_count,
             "payload": [],
             "user_expressions": {},
         }
-        return execution_result
 
 
 if __name__ == "__main__":

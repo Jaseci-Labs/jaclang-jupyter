@@ -5,11 +5,10 @@ import types
 from os import path
 from typing import Callable, Optional
 
+from jackernel.transpiler import transpile_jac_blue
+
 from jaclang.jac.constant import Constants as Con
 from jaclang.utils.helpers import handle_jac_error
-
-from transpiler import read_file
-from transpiler import transpile_jac_blue
 
 
 def import_jac_module(
@@ -65,5 +64,5 @@ def jac_blue_import(
 
 
 # jac_blue_import("sample")
-current_dir = path.dirname(path.abspath(__file__))
-jac_blue_import(read_file("sample.jac"), current_dir)
+# current_dir = path.dirname(path.abspath(__file__))
+# jac_blue_import(read_file("sample.jac"), current_dir)

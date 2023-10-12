@@ -3,13 +3,13 @@ from typing import Type, TypeVar
 
 from jackernel.pyoutpass import CustomPyOutPass
 from jackernel.syntax_hilighter import JacLexer as Lexer
+from jackernel.transform import Alert, Transform
 
 import jaclang.jac.absyntree as ast
 from jaclang.jac.parser import JacLexer, JacParser
 from jaclang.jac.passes import Pass
 from jaclang.jac.passes.blue import BluePygenPass
 from jaclang.jac.passes.blue import pass_schedule
-from jaclang.jac.transform import Alert, Transform
 
 jac_lexer = Lexer()
 
@@ -120,7 +120,6 @@ def transpile_jac_blue(cell: str, caller_dir: str) -> list[Alert]:
         target=BluePygenPass,
         schedule=pass_schedule,
     )
-
     if isinstance(code.ir, ast.Module) and not code.errors_had:
         print_pass = CustomPyOutPass(
             mod_path=caller_dir, input_ir=code.ir, base_path="", prior=code

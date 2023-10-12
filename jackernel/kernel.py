@@ -36,7 +36,7 @@ def exec_jac(code: str) -> str:
     """
     current_dir = op.dirname(op.abspath(__file__))
     try:
-        jac_import(target=code, base_path=current_dir)
+        jac_import(target=code, caller_dir=current_dir)
 
     except Exception as e:
         captured_output = "Exception: " + str(e)

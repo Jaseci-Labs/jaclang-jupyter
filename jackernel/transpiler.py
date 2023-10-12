@@ -1,21 +1,15 @@
 """Transpilation functions for Jupyter Cells."""
-import os
 from typing import Type, TypeVar
 
+from jackernel.pyoutpass import CustomPyOutPass
 from jackernel.syntax_hilighter import JacLexer as Lexer
-
 
 import jaclang.jac.absyntree as ast
 from jaclang.jac.parser import JacLexer, JacParser
 from jaclang.jac.passes import Pass
 from jaclang.jac.passes.blue import BluePygenPass
 from jaclang.jac.passes.blue import pass_schedule
-
-
-from pyoutpass import PyOutPass
-
-from transform import Alert, Transform
-
+from jaclang.jac.transform import Alert, Transform
 
 jac_lexer = Lexer()
 
@@ -62,16 +56,17 @@ def jac_cell_to_pass_tree(cell: str) -> Transform:
     Transform
         The AST.
     """
-    caller_dir = os.path.dirname(os.path.abspath(__file__))
-
-    lex = JacLexer(mod_path=caller_dir, input_ir=cell, base_path="")
-    prse = JacParser(mod_path=caller_dir, input_ir=lex.ir, base_path="", prior=lex)
+    lex = JacLexer(mod_path="", input_ir=cell, base_path="")
+    prse = JacParser(mod_path="", input_ir=lex.ir, base_path="", prior=lex)
 
     return prse
 
 
 def jac_cell_to_pass(
-    cell: str, target: Type[T] = BluePygenPass, schedule: str = pass_schedule
+    cell: str,
+    caller_dir: str,
+    target: Type[T] = BluePygenPass,
+    schedule: str = pass_schedule,
 ) -> str:
     """
     Convert a jac cell to a python cell.
@@ -80,6 +75,8 @@ def jac_cell_to_pass(
     ----------
     cell : str
         The jac cell to convert.
+    caller_dir : str
+        The directory of the caller.
     target : Type[T], optional
     The pass to convert to, by default BluePygenPass
 
@@ -93,14 +90,18 @@ def jac_cell_to_pass(
     for i in schedule:
         if i == target:
             break
-        ast_ret = i(mod_path="", input_ir=ast_ret.ir, base_path="", prior=ast_ret)
+        ast_ret = i(
+            mod_path=caller_dir, input_ir=ast_ret.ir, base_path="", prior=ast_ret
+        )
 
-    ast_ret = target(mod_path="", input_ir=ast_ret.ir, base_path="", prior=ast_ret)
+    ast_ret = target(
+        mod_path=caller_dir, input_ir=ast_ret.ir, base_path="", prior=ast_ret
+    )
 
     return ast_ret
 
 
-def transpile_jac_blue(cell: str) -> list[Alert]:
+def transpile_jac_blue(cell: str, caller_dir: str) -> list[Alert]:
     """Transpiler Jac file and return python code as string.
 
     Parameters
@@ -115,13 +116,14 @@ def transpile_jac_blue(cell: str) -> list[Alert]:
     """
     code = jac_cell_to_pass(
         cell=cell,
+        caller_dir=caller_dir,
         target=BluePygenPass,
         schedule=pass_schedule,
     )
 
     if isinstance(code.ir, ast.Module) and not code.errors_had:
-        print_pass = PyOutPass(
-            mod_path="curr_dir", input_ir=code.ir, base_path="", prior=code
+        print_pass = CustomPyOutPass(
+            mod_path=caller_dir, input_ir=code.ir, base_path="", prior=code
         )
     else:
         return code.errors_had
@@ -151,7 +153,9 @@ def transpile_jac_purple(cell: str) -> list[Alert]:
     )
 
     if isinstance(code.ir, ast.Module) and not code.errors_had:
-        print_pass = PyOutPass(mod_path="", input_ir=code.ir, base_path="", prior=code)
+        print_pass = CustomPyOutPass(
+            mod_path="", input_ir=code.ir, base_path="", prior=code
+        )
     else:
         return code.errors_had
 

@@ -15,7 +15,7 @@ def import_jac_module(
     transpiler_func: Callable,
     target: str,
     caller_dir: Optional[str] = None,
-    cachable: bool = False,
+    cachable: bool = True,
     override_name: Optional[str] = None,
 ) -> Optional[types.ModuleType]:
     """Core Import Process."""
@@ -23,24 +23,18 @@ def import_jac_module(
     py_file_path = path.join(gen_dir, "session.py")
     pyc_file_path = path.join(gen_dir, "session.pyc")
 
-    if cachable and path.exists(py_file_path):
-        with open(py_file_path, "r") as f:
-            code_string = f.read()
-        with open(pyc_file_path, "rb") as f:
-            codeobj = marshal.load(f)
-    else:
-        if transpiler_func(cell=target, caller_dir=caller_dir):
-            return None
-        with open(py_file_path, "r") as f:
-            code_string = f.read()
-        with open(pyc_file_path, "rb") as f:
-            codeobj = marshal.load(f)
+    print("hi")
+    if transpiler_func(cell=target, caller_dir=caller_dir):
+        return None
+    with open(py_file_path, "r") as f:
+        code_string = f.read()
+    with open(pyc_file_path, "rb") as f:
+        codeobj = marshal.load(f)
 
     module = types.ModuleType("session")
     module.__file__ = caller_dir
     module.__name__ = override_name if override_name else "session"
     module.__dict__["_jac_pycodestring_"] = code_string
-
     try:
         exec(codeobj, module.__dict__)
     except Exception as e:

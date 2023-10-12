@@ -9,15 +9,13 @@ Version: 1.0.0
 
 import contextlib
 import os.path as op
-import tempfile
 from io import StringIO
 
 from ipykernel.kernelapp import IPKernelApp
 from ipykernel.kernelbase import Kernel
 
+from jackernel.importer import jac_blue_import as jac_import
 from jackernel.syntax_hilighter import JacLexer
-
-from jaclang import jac_blue_import as jac_import
 
 jac_lexer = JacLexer()
 
@@ -36,33 +34,27 @@ def exec_jac(code: str) -> str:
     str
         The output of the execution.
     """
-    with tempfile.TemporaryDirectory() as tmpdir:
-        source_path = op.join(tmpdir, "temp.jac")
+    current_dir = op.dirname(op.abspath(__file__))
+    try:
+        jac_import(target=code, base_path=current_dir)
 
-        # Write the code to the jac file.
-        with open(source_path, "w") as f:
-            f.write(code)
+    except Exception as e:
+        captured_output = "Exception: " + str(e)
+        return captured_output
 
-        try:
-            jac_import(target=op.join(tmpdir, "temp"), base_path=tmpdir)
-            # Import the jac file, this generates the __jac_gen__ folder at the same level as the jac file,
-            # This folder contains the python file that we want to execute.
-            script_path = op.join(tmpdir, "__jac_gen__/temp.py")
+    script_file_path = op.join(current_dir, "__jac_gen__/session.py")
+    try:
+        with open(script_file_path, "r") as script_file:
+            script_code = script_file.read()
+            stdout_capture = StringIO()  # You need to import StringIO from io module
 
-            with open(script_path, "r") as script_file:
-                script_code = script_file.read()
-                stdout_capture = (
-                    StringIO()
-                )  # You need to import StringIO from io module
+            with contextlib.redirect_stdout(stdout_capture):
+                exec(script_code)
 
-                with contextlib.redirect_stdout(stdout_capture):
-                    exec(script_code)
-
-                captured_output = stdout_capture.getvalue()
-
-        except Exception as e:
-            captured_output = "Exception: " + str(e)
-            return captured_output
+            captured_output = stdout_capture.getvalue()
+    except Exception as e:
+        captured_output = "Exception: " + str(e)
+        return captured_output
 
     return captured_output
 
